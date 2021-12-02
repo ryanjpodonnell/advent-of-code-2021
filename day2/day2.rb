@@ -36,17 +36,21 @@ class Submarine
   end
 end
 
-def parse_input
-  file_data = File.open('input.txt')
-  file_data.readlines.map do |line|
-    line.chomp!
-    command = line.split(' ').first.to_sym
-    units = line.split(' ').last.to_i
-    Instruction.new(command, units)
+module Day2
+  def solution(filename)
+    instructions = parse_input(filename)
+    submarine = Submarine.new(0, 0, 0)
+    submarine.dive!(instructions)
+    submarine.code
+  end
+
+  def parse_input(filename)
+    file_data = File.open(filename)
+    file_data.readlines.map do |line|
+      line.chomp!
+      command = line.split(' ').first.to_sym
+      units = line.split(' ').last.to_i
+      Instruction.new(command, units)
+    end
   end
 end
-
-instructions = parse_input
-submarine = Submarine.new(0, 0, 0)
-submarine.dive!(instructions)
-puts submarine.code
