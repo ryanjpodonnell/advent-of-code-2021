@@ -51,7 +51,7 @@ class DiagnosticReport
 
     string_position = 0
     while string_position < number_of_bits_per_report
-      bits = binary_reports.map { |report| report.split('')[string_position] }
+      bits = bits_from_position(binary_reports, string_position)
       rate_bits << send(bit_method, bits)
 
       string_position += 1
@@ -65,7 +65,7 @@ class DiagnosticReport
 
     string_position = 0
     while string_position < number_of_bits_per_report
-      bits = remaining_reports.map { |report| report.split('')[string_position] }
+      bits = bits_from_position(remaining_reports, string_position)
       significant_bit = send(bit_method, bits)
       remaining_reports.select! { |report| report.split('')[string_position] == significant_bit }
 
@@ -75,6 +75,10 @@ class DiagnosticReport
     end
 
     remaining_reports.first
+  end
+
+  def bits_from_position(collection, position)
+    collection.map { |report| report.split('')[position] }
   end
 end
 
@@ -93,8 +97,6 @@ module Day3
 
   def parse_input(filename)
     file_data = File.open(filename)
-    file_data.readlines.map do |line|
-      line.chomp
-    end
+    file_data.readlines.map(&:chomp)
   end
 end
