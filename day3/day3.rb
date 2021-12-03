@@ -16,26 +16,24 @@ class DiagnosticReport
   private
 
   def gamma_rate
-    rate_string(:most_significant_bit).to_i(2)
+    rate_string([], 0, :most_significant_bit).to_i(2)
   end
 
   def epsilon_rate
-    rate_string(:least_significant_bit).to_i(2)
+    rate_string([], 0, :least_significant_bit).to_i(2)
   end
 
   def oxygen_generator_rating
-    remainder_string(:most_significant_bit).to_i(2)
+    remainder_string(binary_reports.dup, 0, :most_significant_bit).to_i(2)
   end
 
   def co2_scrubber_rating
-    remainder_string(:least_significant_bit).to_i(2)
+    remainder_string(binary_reports.dup, 0, :least_significant_bit).to_i(2)
   end
 
   def most_significant_bit(bits)
-    zeroes_count = bits.select { |bit| bit == '0' }.count
-    ones_count = bits.select { |bit| bit == '1' }.count
-
-    zeroes_count > ones_count ? '0' : '1'
+    zeroes, ones = bits.partition { |bit| bit == '0' }
+    zeroes.count > ones.count ? '0' : '1'
   end
 
   def least_significant_bit(bits)
@@ -46,35 +44,22 @@ class DiagnosticReport
     binary_reports.first.split('').count
   end
 
-  def rate_string(bit_method)
-    rate_bits = []
+  def rate_string(rate_bits, string_position, bit_method)
+    return rate_bits.join if rate_bits.count == number_of_bits_per_report
 
-    string_position = 0
-    while string_position < number_of_bits_per_report
-      bits = bits_from_position(binary_reports, string_position)
-      rate_bits << send(bit_method, bits)
-
-      string_position += 1
-    end
-
-    rate_bits.join
+    bits = bits_from_position(binary_reports, string_position)
+    rate_string(rate_bits + [send(bit_method, bits)], string_position + 1, bit_method)
   end
 
-  def remainder_string(bit_method)
-    remaining_reports = binary_reports.dup
+  def remainder_string(reports, string_position, bit_method)
+    return reports.first if reports.count == 1
+    return reports.first if string_position == number_of_bits_per_report
 
-    string_position = 0
-    while string_position < number_of_bits_per_report
-      bits = bits_from_position(remaining_reports, string_position)
-      significant_bit = send(bit_method, bits)
-      remaining_reports.select! { |report| report.split('')[string_position] == significant_bit }
+    bits = bits_from_position(reports, string_position)
+    significant_bit = send(bit_method, bits)
+    reports.select! { |report| report.split('')[string_position] == significant_bit }
 
-      return remaining_reports.first if remaining_reports.count == 1
-
-      string_position += 1
-    end
-
-    remaining_reports.first
+    remainder_string(reports, string_position + 1, bit_method)
   end
 
   def bits_from_position(collection, position)
