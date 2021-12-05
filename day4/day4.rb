@@ -1,20 +1,16 @@
 Square = Struct.new(:value, :row, :column, :marked)
 
 class Board
-  attr_reader :winning_number
-  attr_accessor :place
+  attr_accessor :place, :winning_number
 
   def initialize(rows)
-    @rows = rows
     @squares = []
-    @most_recently_marked_number = nil
     @winning_place = nil
-    parse_input!
+    parse_input!(rows)
   end
 
   def mark!(number)
     @squares.select { |square| square.value == number }.each do |square|
-      @most_recently_marked_number = number
       square.marked = true
     end
   end
@@ -24,10 +20,7 @@ class Board
       row_marked_count = marked_count(:row, row_or_column_count)
       column_marked_count = marked_count(:column, row_or_column_count)
 
-      if row_marked_count == 5 || column_marked_count == 5
-        @winning_number = @most_recently_marked_number
-        return true
-      end
+      return true if row_marked_count == 5 || column_marked_count == 5
     end
 
     false
@@ -48,8 +41,8 @@ class Board
     sum_of_all_unmarked_numbers * winning_number
   end
 
-  def parse_input!
-    @rows.each_with_index do |row, row_index|
+  def parse_input!(rows)
+    rows.each_with_index do |row, row_index|
       row.each_with_index do |value, column_index|
         @squares << Square.new(value, row_index, column_index, false)
       end
@@ -62,9 +55,12 @@ module Day4
     order, boards = parse_input(filename)
 
     order.each do |number|
-      boards.each { |board| board.mark!(number) }
       boards.each do |board|
-        return board.score if board.victory?
+        board.mark!(number)
+        if board.victory?
+          board.winning_number = number
+          return board.score
+        end
       end
     end
   end
@@ -77,6 +73,7 @@ module Day4
       boards.each { |board| board.mark!(number) if board.victory? == false }
       boards.each do |board|
         if board.victory? && board.place.nil?
+          board.winning_number = number
           board.place = place
           place += 1
         end
