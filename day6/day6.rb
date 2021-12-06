@@ -12,10 +12,9 @@ class School
   end
 
   def update_internal_timers!
-    (0..8).each do |grouping|
-      @school[grouping] = @school[grouping + 1]
+    (0..9).each do |grouping|
+      @school[grouping] = @school[grouping + 1] || 0
     end
-    @school[9] = 0
   end
 
   def cycle!
