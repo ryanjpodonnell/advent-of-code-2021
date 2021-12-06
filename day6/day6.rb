@@ -1,20 +1,14 @@
 class School
   def initialize(input_arr)
-    @school = initialize_school(input_arr)
-  end
-
-  def initialize_school(input_arr)
-    school = input_arr.group_by { |lanternfish| lanternfish }
-    school.map do |key, value|
-      school[key] = value.count
+    @school = {}
+    input_arr.group_by(&:itself).map do |key, value|
+      @school[key] = value.count
     end
-    (0..9).each { |grouping| school[grouping] = 0 if school[grouping].nil? }
-    school
   end
 
   def spawn_new_lanternfish!
-    @school[9] = @school[0]
-    @school[7] = @school[0] + @school[7]
+    @school[9] = @school[0] || 0
+    @school[7] = (@school[0] || 0) + (@school[7] || 0)
   end
 
   def update_internal_timers!
@@ -30,7 +24,7 @@ class School
   end
 
   def simulate!(days)
-    return @school.count if days.zero?
+    return score if days.zero?
 
     cycle!
     simulate!(days - 1)
@@ -44,9 +38,7 @@ end
 module Day6
   def part1(filename, days)
     lanternfishes = parse_input(filename)
-    school = School.new(lanternfishes)
-    school.simulate!(days)
-    school.score
+    School.new(lanternfishes).simulate!(days)
   end
 
   def parse_input(filename)
