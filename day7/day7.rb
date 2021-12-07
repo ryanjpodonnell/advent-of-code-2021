@@ -1,8 +1,7 @@
-class FunStuff
+class CrabFleet
   def initialize(positions)
     @positions = positions
     @cached_total_fuel = {}
-    @cached_crab_fuel = {}
   end
 
   def total_fuel_to_destination(destination, method)
@@ -16,42 +15,32 @@ class FunStuff
     @cached_total_fuel[destination] = fuel
   end
 
-  def crab_fuel1_to_destination(position, destination)
+  def crab_fuel_simple(position, destination)
     (position - destination).abs
   end
 
-  def crab_fuel2_to_destination(position, destination)
+  def crab_fuel_complex(position, destination)
     distance = (position - destination).abs
-    cached_crab_fuel = @cached_crab_fuel[distance]
-    return cached_crab_fuel unless cached_crab_fuel.nil?
-
-    total_distance = fuel2_calculation(0, distance, 1)
-    @cached_crab_fuel[distance] = total_distance
-  end
-
-  def fuel2_calculation(total, distance, steps)
-    return total if distance.zero?
-
-    fuel2_calculation(total + steps, distance - 1, steps + 1)
+    distance * (distance + 1) / 2
   end
 end
 
 module Day7
   def part1(filename)
     positions = parse_input(filename)
-    fun_stuff = FunStuff.new(positions)
+    crab_fleet = CrabFleet.new(positions)
 
     (positions.min..positions.max).map do |potential_destination|
-      fun_stuff.total_fuel_to_destination(potential_destination, :crab_fuel1_to_destination)
+      crab_fleet.total_fuel_to_destination(potential_destination, :crab_fuel_simple)
     end.min
   end
 
   def part2(filename)
     positions = parse_input(filename)
-    fun_stuff = FunStuff.new(positions)
+    crab_fleet = CrabFleet.new(positions)
 
     (positions.min..positions.max).map do |potential_destination|
-      fun_stuff.total_fuel_to_destination(potential_destination, :crab_fuel2_to_destination)
+      crab_fleet.total_fuel_to_destination(potential_destination, :crab_fuel_complex)
     end.min
   end
 
