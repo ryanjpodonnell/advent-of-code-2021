@@ -1,52 +1,106 @@
-class CrabFleet
-  def initialize(positions)
-    @positions = positions
-    @cached_total_fuel = {}
+class SyntaxParser
+  OPEN = ['(', '[', '{', '<'].freeze
+
+  MAPPING = {
+    '(' => ')',
+    '[' => ']',
+    '{' => '}',
+    '<' => '>'
+  }.freeze
+
+  SCORE = {
+    ')' => 3,
+    ']' => 57,
+    '}' => 1_197,
+    '>' => 25_137
+  }.freeze
+
+  SCORE2 = {
+    ')' => 1,
+    ']' => 2,
+    '}' => 3,
+    '>' => 4
+  }.freeze
+
+  def initialize
+    @occurances = {
+      ')' => 0,
+      ']' => 0,
+      '}' => 0,
+      '>' => 0
+    }
+    @closing_sequences = []
   end
 
-  def total_fuel_to_destination(destination, method)
-    cached_total_fuel = @cached_total_fuel[destination]
-    return cached_total_fuel unless cached_total_fuel.nil?
-
-    fuel = @positions.map do |position|
-      send(method, position, destination)
+  def score
+    @occurances.map do |char, number_of_occurances|
+      number_of_occurances * SCORE[char]
     end.sum
-
-    @cached_total_fuel[destination] = fuel
   end
 
-  def crab_fuel_simple(position, destination)
-    (position - destination).abs
+  def score2
+    sorted_scores = @closing_sequences.map do |sequence|
+      score_sequence(sequence)
+    end.sort
+
+    sorted_scores.at(sorted_scores.length / 2)
   end
 
-  def crab_fuel_complex(position, destination)
-    distance = (position - destination).abs
-    distance * (distance + 1) / 2
+  def score_sequence(sequence)
+    score = 0
+
+    sequence.each do |char|
+      score *= 5
+      score += SCORE2[char]
+    end
+
+    score
+  end
+
+  def parse_chunk(chunk)
+    stack = []
+    valid_chunk = true
+
+    chunk.chars.each do |char|
+      if OPEN.include?(char)
+        stack = stack.push(char)
+      else
+        popped_char = stack.pop
+        if char != MAPPING[popped_char]
+          @occurances[char] += 1 if char != MAPPING[popped_char]
+          valid_chunk = false
+        end
+      end
+    end
+
+    @closing_sequences << stack.map { |char| MAPPING[char] }.reverse if valid_chunk
   end
 end
 
 module Day10
   def part1(filename)
-    positions = parse_input(filename)
-    crab_fleet = CrabFleet.new(positions)
+    parser = SyntaxParser.new
+    chunks = parse_input(filename)
+    chunks.each do |chunk|
+      parser.parse_chunk(chunk)
+    end
 
-    (positions.min..positions.max).map do |potential_destination|
-      crab_fleet.total_fuel_to_destination(potential_destination, :crab_fuel_simple)
-    end.min
+    parser.score
   end
 
   def part2(filename)
-    positions = parse_input(filename)
-    crab_fleet = CrabFleet.new(positions)
+    parser = SyntaxParser.new
+    chunks = parse_input(filename)
+    chunks.each do |chunk|
+      parser.parse_chunk(chunk)
+    end
 
-    (positions.min..positions.max).map do |potential_destination|
-      crab_fleet.total_fuel_to_destination(potential_destination, :crab_fuel_complex)
-    end.min
+    parser.score2
   end
 
   def parse_input(filename)
     file = File.open(filename)
-    input = file.readlines.first.chomp.split(',').map(&:to_i)
+    input = file.readlines.map(&:chomp)
     file.close
     input
   end
