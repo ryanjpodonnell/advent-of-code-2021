@@ -12,27 +12,21 @@ module Day12a
 
     traverse(['start'])
 
-    @paths.select { |path| path[-1] == 'end' }.uniq.count
+    @paths.count
   end
 
   def traverse(path)
-    connection = @connections.find { |start, _| start == path[-1] }
-    return if connection.nil?
+    if path.last == 'end'
+      @paths << path
+      return
+    end
 
-    finishing_segments = connection.last
+    finishing_segments = @connections[path.last]
+    finishing_segments.each do |finishing_segment|
+      next if path.include?(finishing_segment) &&
+              finishing_segment.downcase == finishing_segment
 
-    paths = finishing_segments.map do |finishing_segment|
-      next if path.include?(finishing_segment) && finishing_segment.downcase == finishing_segment
-
-      path + [finishing_segment]
-    end.compact
-
-    paths.each do |p|
-      if p[-1] == 'end'
-        @paths << p
-      else
-        traverse(p)
-      end
+      traverse(path + [finishing_segment])
     end
   end
 
