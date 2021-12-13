@@ -46,8 +46,8 @@ module Day13b
       max_y = y if y > max_y
     end
 
-    (0..max_x).each do |x|
-      row = (0..max_y).map do |y|
+    (0..max_y).each do |y|
+      row = (0..max_x).map do |x|
         @coords.include?([x, y]) ? '#' : '.'
       end
       puts row.join('')
