@@ -8,7 +8,7 @@ RSpec.describe Day14b do
   let(:input_filename) { 'input.txt' }
 
   it 'returns the expect solution' do
-    expect(solution(example_filename)).to eq(16)
-    expect(solution(input_filename)).to eq(90)
+    expect(solution(example_filename)).to eq(2_188_189_693_529)
+    expect(solution(input_filename)).to eq(4_371_307_836_157)
   end
 end
