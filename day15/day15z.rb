@@ -1,33 +1,28 @@
 module Day15z
   def solution(filename)
     lines = parse_input(filename)
-    @rows = lines.count
-    @cols = lines.first.split('').length
-    @cave = initialize_cave(lines)
+    rows = lines.count
+    cols = lines.first.split('').length
+    cave = initialize_cave(lines)
 
-    graph = @cave.dup
-    distances = dijkstra(graph, [0, 0])
-    distances[[@rows - 1, @cols - 1]]
+    distances = dijkstra(cave, [0, 0])
+    distances[[rows - 1, cols - 1]]
   end
 
   def dijkstra(graph, source)
     set_q = {}
     dist = {}
 
-    graph.each do |v, risk_level|
-      set_q[v] = {}
-      set_q[v][:risk_level] = risk_level
-      set_q[v][:dist] = 1_000_000
-
+    graph.each do |v, _|
+      set_q[v] = 1_000_000
       dist[v] = 1_000_000
     end
 
     dist[source] = 0
-    set_q[source][:dist] = 0
+    set_q[source] = 0
 
     while set_q.empty? == false
-      u = set_q.min_by { |_, v| v[:dist] }.first
-      puts set_q.count
+      u = set_q.min_by { |_, v| v }.first
       set_q.delete(u)
 
       x, y = u
@@ -38,7 +33,7 @@ module Day15z
         next unless alt < dist[v]
 
         dist[v] = alt
-        set_q[v][:dist] = alt
+        set_q[v] = alt
       end
     end
 
